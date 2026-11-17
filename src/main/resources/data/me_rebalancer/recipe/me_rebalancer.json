@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "redstone",
+  "pattern": [
+    "DQD",
+    "CPC",
+    "DRD"
+  ],
+  "key": {
+    "Q": "ae2:certus_quartz_crystal",
+    "C": "ae2:fluix_glass_cable",
+    "P": "ae2:logic_processor",
+    "R": "minecraft:redstone",
+    "D": "minecraft:diamond"
+  },
+  "result": {
+    "id": "me_rebalancer:me_rebalancer",
+    "count": 1
+  }
+}

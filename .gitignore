@@ -1,0 +1,15 @@
+.gradle/
+build/
+run/
+run-data/
+.idea/
+*.iml
+local.properties
+__pycache__/
+
+.tools/
+backups/
+.DS_Store
+*.log
+*.jar
+!gradle/wrapper/gradle-wrapper.jar

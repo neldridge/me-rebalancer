@@ -1,0 +1,56 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.moddev' version '2.0.148'
+}
+version = mod_version
+group = 'dev.functionalae'
+base { archivesName = 'me-rebalancer' }
+java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+repositories {
+    mavenCentral()
+    maven { url = 'https://modmaven.dev/' }
+}
+neoForge {
+    version = neo_version
+    runs {
+        client {
+            client()
+            systemProperty 'me_rebalancer.devWindow', 'true'
+        }
+        server { server(); programArgument '--nogui' }
+        gameTestServer {
+            type = 'gameTestServer'
+            gameDirectory = project.file('build/game-test-run')
+            systemProperty 'me_rebalancer.gameTests', 'true'
+            systemProperty 'neoforge.enabledGameTestNamespaces', 'me_rebalancer'
+        }
+    }
+    mods { me_rebalancer { sourceSet sourceSets.main } }
+}
+configurations { runtimeClasspath.extendsFrom localRuntime }
+dependencies {
+    // A local jar can be supplied to match an installed pack byte-for-byte.
+    if (providers.gradleProperty('packModsDir').isPresent()) {
+        def pack = file(providers.gradleProperty('packModsDir').get())
+        implementation files(new File(pack, "appliedenergistics2-${ae2_version}.jar"))
+        implementation files(new File(pack, 'guideme-26.1.17-beta.jar'))
+        localRuntime files(new File(pack, 'functionalstorage-26.1.2-1.6.4.jar'))
+        localRuntime files(new File(pack, 'titanium-26.1.2-4.0.16.jar'))
+    } else if (providers.gradleProperty('ae2Jar').isPresent()) {
+        implementation files(providers.gradleProperty('ae2Jar').get())
+    } else {
+        implementation "org.appliedenergistics:appliedenergistics2:${ae2_version}"
+        implementation "org.appliedenergistics:guideme:26.1.17-beta"
+    }
+    testImplementation platform('org.junit:junit-bom:5.12.2')
+    testImplementation 'org.junit.jupiter:junit-jupiter'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+tasks.named('test') { useJUnitPlatform() }
+tasks.withType(JavaCompile).configureEach { options.encoding = 'UTF-8' }
+// Asset downloads otherwise default to a separate Java 21 toolchain. NFRT also runs on 25.
+tasks.withType(net.neoforged.nfrtgradle.NeoFormRuntimeTask).configureEach {
+    javaExecutable = javaToolchains.launcherFor {
+        languageVersion = JavaLanguageVersion.of(25)
+    }.map { it.executablePath.asFile.absolutePath }
+}
