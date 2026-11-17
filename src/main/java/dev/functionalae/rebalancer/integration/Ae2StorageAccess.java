@@ -33,6 +33,7 @@ public final class Ae2StorageAccess {
             for (var entry : access.rebalancer$getMounts().entrySet()) {
                 for (var inventory : entry.getValue()) {
                     if (mounts.size() >= maxMounts) throw new IllegalStateException("Mounted inventory limit exceeded");
+                    if (isInfinityCell(inventory)) continue;
                     mounts.add(new Mounted(inventory, entry.getKey(), source, access));
                 }
             }
@@ -41,6 +42,24 @@ public final class Ae2StorageAccess {
             access.rebalancer$setBusy(false);
             access.rebalancer$flushMountChanges();
         }
+    }
+    /** Match optional mods by handler type, never by the quantity of an ordinary item. */
+    private static boolean isInfinityCell(MEStorage inventory) {
+        var seen = Collections.newSetFromMap(new IdentityHashMap<MEStorage, Boolean>());
+        while (inventory != null && seen.add(inventory)) {
+            for (Class<?> type = inventory.getClass(); type != null; type = type.getSuperclass()) {
+                if (switch (type.getName()) {
+                    case "com.glodblock.github.extendedae.common.inventory.InfinityCellInventory",
+                         "net.yxiao233.meinfinitycell.common.inventory.InfinityCellInventory",
+                         "net.yxiao233.meinfinitycell.common.inventory.InfinitiesCellInventory" -> true;
+                    default -> false;
+                }) return true;
+            }
+            if (inventory instanceof dev.functionalae.rebalancer.mixin.DelegatingStorageAccessor wrapper)
+                inventory = wrapper.rebalancer$getDelegate();
+            else break;
+        }
+        return false;
     }
     public static net.minecraft.network.chat.Component describe(RebalanceEngine.Storage<AEItemKey> storage,
                                                                 DestinationLabels labels) {

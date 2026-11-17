@@ -20,7 +20,7 @@ public final class RebalancerScreen extends AbstractContainerScreen<RebalancerMe
         super.init();
         start = actionButton(12, 112, 54, 0, "start");
         mode = actionButton(70, 112, 72, 1, "once");
-        scope = actionButton(146, 112, 90, 2, "selected");
+        scope = actionButton(146, 112, 90, 2, "all");
         scope.setTooltip(Tooltip.create(tr("scope_help")));
         test = actionButton(158, 6, 78, 4, "test_run");
         test.setTooltip(Tooltip.create(tr("test_help")));
@@ -53,7 +53,7 @@ public final class RebalancerScreen extends AbstractContainerScreen<RebalancerMe
         start.setMessage(tr(menu.flag(1) ? "pause" : "start"));
         start.active = !menu.flag(16) && (menu.flag(1) || menu.flag(8));
         mode.setMessage(tr(menu.flag(2) ? "continuous" : "once"));
-        scope.setMessage(tr(menu.flag(4) ? "all" : "selected"));
+        scope.setMessage(tr(menu.flag(4) ? "all" : menu.flag(32) ? "blacklist" : "whitelist"));
         mode.active = scope.active = clear.active = !menu.flag(16);
         boolean preview = menu.previewView();
         start.visible = mode.visible = scope.visible = clear.visible = !preview;
@@ -86,7 +86,7 @@ public final class RebalancerScreen extends AbstractContainerScreen<RebalancerMe
         graphics.text(font, tr("moved", compact(menu.moved())), 12, 34, 0xffd0d8e0, false);
         graphics.text(font, tr("buffered", compact(menu.buffered())), 140, 34, 0xffd0d8e0, false);
         graphics.text(font, tr("filters", menu.page() + 1, RebalancerMenu.PAGES), 12, 47, 0xffe0e7ed, false);
-        graphics.text(font, tr(menu.flag(4) ? "all_help" : "filter_help"), 12, 98, 0xffaabac8, false);
+        graphics.text(font, tr(menu.flag(4) ? "all_help" : menu.flag(32) ? "blacklist_help" : "whitelist_help"), 12, 98, 0xffaabac8, false);
         graphics.text(font, playerInventoryTitle, 43, 138, 0xffc6d0dc, false);
     }
     private void extractPreview(GuiGraphicsExtractor graphics) {

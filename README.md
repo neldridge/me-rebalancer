@@ -25,10 +25,10 @@ Right-click the block to open its menu.
 
 - **64 ghost filters over four pages.** Pick up an inventory stack and click a filter to copy its exact item/component variant. The actual stack stays on the cursor. Right-click a filter to remove it.
 - **Shift-click an inventory item** to add it to the first available filter without moving or consuming the stack.
-- **Selected items / All items: ON** explicitly selects the transfer scope. An empty whitelist matches nothing. New blocks start with no filters and all-items mode off.
-- **Start / Pause** controls transfers. The Start button is disabled until a filter or explicit all-items scope is selected.
+- **All items / Whitelist / Blacklist** cycles the transfer scope. New blocks default to All items. Whitelist moves only listed items (an empty list moves nothing); Blacklist moves everything except listed items (an empty list allows everything). Switching modes preserves the list, and editing or clearing filters preserves the mode. Existing blocks keep their saved scope.
+- **Start / Pause** controls transfers. The Start button is disabled for an empty whitelist.
 - **Run once / Continuous** chooses whether to stop when settled or keep checking for useful moves.
-- **Clear** removes every filter and disables all-items scope.
+- **Clear** removes every filter while keeping the current mode.
 - Adding, removing, or clearing filters and changing scope apply immediately while preserving Running or Paused. The scan restarts with the updated selection; an empty selection matches nothing. A run-once operation may subsequently settle, while Continuous keeps monitoring.
 - Status, lifetime items moved, and recovery buffer count update from the server. Hover over the counters to see exact large values.
 
@@ -54,6 +54,7 @@ Scans examine at most eight keys/exhausted sources per server tick, stop after 4
 
 - One channel and 2 AE/t idle usage.
 - Only item transfers, between actual mounted inventories. Cells remain installed.
+- Infinity cells from ExtendedAE and ME Infinity Cell are excluded from transfers and Test Run quantities, including wrapped drive inventories. Finite stock of the same item in ordinary storage still participates.
 - Strictly increasing storage priority; equal-priority storage is left alone.
 - Highest-priority destinations first, then AE2's preferred-storage rule within each priority group.
 - Defaults: up to 4,096 items and 64 source checks per active tick. Throughput, power cost, idle delay, and mount limit are configurable in server settings.
@@ -91,7 +92,7 @@ Isolated headless integration test (uses `build/game-test-run/`):
 ## Validation
 
 - **33 JUnit tests** cover transfers, explicit selection, and simulation-only preview planning, including shared capacity, split destinations, long counts, filters, preference, topology changes, and work limits.
-- **A real Minecraft menu GameTest** verifies ghost stack conservation across click types, filter save/reload including components, legacy selection migration, explicit all-items mode, 64-bit counter synchronization, and distance validation. It also checks preview slot safety and offline Test Run behavior. A second GameTest verifies destination lookup against a real Functional Storage controller block and the actual AE2 bus wrapper. All three required tests pass (our two tests plus Minecraft's built-in example).
+- **A real Minecraft menu GameTest** verifies ghost stack conservation across click types, filter save/reload including components, legacy selection migration, all-items/whitelist/blacklist modes, 64-bit counter synchronization, and distance validation. It also checks preview slot safety and offline Test Run behavior. A second GameTest verifies destination lookup against a real Functional Storage controller block and the actual AE2 bus wrapper. All three required tests pass (our two tests plus Minecraft's built-in example).
 - Isolated GUI-version client startup and AE2 bridge self-check passed with the exact pack dependencies.
 - **28 offline resource and binary contract checks** pass:
 

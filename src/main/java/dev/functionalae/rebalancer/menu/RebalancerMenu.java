@@ -42,7 +42,7 @@ public final class RebalancerMenu extends AbstractContainerMenu {
         data = entity == null ? new SimpleContainerData(14) : new ContainerData() {
             public int get(int index) {
                 if (index == 0) return (entity.running() ? 1 : 0) | (entity.continuous() ? 2 : 0)
-                        | (entity.allItems() ? 4 : 0) | (entity.canStart() ? 8 : 0) | (entity.faulted() ? 16 : 0);
+                        | (entity.allItems() ? 4 : 0) | (entity.canStart() ? 8 : 0) | (entity.faulted() ? 16 : 0) | (entity.blacklist() ? 32 : 0);
                 if (index == 1) return entity.statusCode();
                 if (index == 10) return previewState;
                 if (index == 11) return previewPage;

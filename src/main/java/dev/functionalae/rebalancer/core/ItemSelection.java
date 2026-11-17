@@ -2,17 +2,25 @@ package dev.functionalae.rebalancer.core;
 
 import java.util.*;
 
-/** Explicit selection: an empty whitelist matches nothing, never everything. */
+/** All items by default; explicit whitelist and blacklist use exact item keys. */
 public final class ItemSelection<K> {
     public static final int SIZE = 64;
     private final List<K> slots = new ArrayList<>(Collections.nCopies(SIZE, null));
-    private boolean allItems;
+    public enum Mode { ALL, WHITELIST, BLACKLIST }
+    private Mode mode = Mode.ALL;
 
     public K get(int slot) { return slots.get(slot); }
-    public boolean allItems() { return allItems; }
-    public void setAllItems(boolean value) { allItems = value; }
-    public boolean matches(K key) { return allItems || slots.contains(Objects.requireNonNull(key)); }
-    public boolean canRun() { return allItems || count() > 0; }
+    public boolean allItems() { return mode == Mode.ALL; }
+    public Mode mode() { return mode; }
+    public void setMode(Mode value) { mode = Objects.requireNonNull(value); }
+    public void nextMode() { mode = Mode.values()[(mode.ordinal() + 1) % Mode.values().length]; }
+    public boolean matches(K key) { Objects.requireNonNull(key);
+        return switch (mode) {
+            case ALL -> true;
+            case WHITELIST -> slots.contains(key);
+            case BLACKLIST -> !slots.contains(key);
+        }; }
+    public boolean canRun() { return mode != Mode.WHITELIST || count() > 0; }
     public int count() { return (int) slots.stream().filter(Objects::nonNull).count(); }
     public void set(int slot, K key) {
         if (slot < 0 || slot >= SIZE) throw new IndexOutOfBoundsException(slot);
@@ -29,5 +37,5 @@ public final class ItemSelection<K> {
         set(empty, key);
         return true;
     }
-    public void clear() { Collections.fill(slots, null); allItems = false; }
+    public void clear() { Collections.fill(slots, null); }
 }

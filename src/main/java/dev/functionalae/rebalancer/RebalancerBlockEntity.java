@@ -82,13 +82,11 @@ public final class RebalancerBlockEntity extends AENetworkedBlockEntity implemen
     public void setFilter(int index, ItemStack stack) {
         if (faulted) return;
         selection.set(index, stack.isEmpty() ? null : AEItemKey.of(stack));
-        selection.setAllItems(false);
         selectionChanged();
     }
     public void addFilter(ItemStack stack) {
         if (faulted || stack.isEmpty()) return;
         if (selection.add(AEItemKey.of(stack))) {
-            selection.setAllItems(false);
             selectionChanged();
         }
     }
@@ -104,7 +102,7 @@ public final class RebalancerBlockEntity extends AENetworkedBlockEntity implemen
                 cooldown = 0; engine.resetScan(); status = running ? "running" : "paused"; saveChanges();
             }
             case 1 -> { continuous = !continuous; saveChanges(); }
-            case 2 -> { selection.setAllItems(!selection.allItems()); selectionChanged(); }
+            case 2 -> { selection.nextMode(); selectionChanged(); }
             case 3 -> { selection.clear(); selectionChanged(); }
             default -> { }
         }
@@ -117,6 +115,7 @@ public final class RebalancerBlockEntity extends AENetworkedBlockEntity implemen
     }
     public boolean running() { return running; }
     public boolean continuous() { return continuous; }
+    public boolean blacklist() { return selection.mode() == ItemSelection.Mode.BLACKLIST; }
     public boolean allItems() { return selection.allItems(); }
     public boolean faulted() { return faulted; }
     public boolean canStart() { return selection.canRun() && !faulted; }
@@ -133,7 +132,7 @@ public final class RebalancerBlockEntity extends AENetworkedBlockEntity implemen
         super.saveAdditional(output);
         output.putBoolean("running", running); output.putBoolean("continuous", continuous);
         output.putBoolean("faulted", faulted); output.putLong("moved", moved);
-        output.putBoolean("allItems", selection.allItems());
+        output.putInt("filterMode", selection.mode().ordinal());
         var slots = output.childrenList("filterSlots");
         for (int i = 0; i < ItemSelection.SIZE; i++) {
             var key = selection.get(i);
@@ -163,7 +162,11 @@ public final class RebalancerBlockEntity extends AENetworkedBlockEntity implemen
             // Import the original prototype's filters. Its implicit all-items mode is not retained.
             for (var filter : input.read("filters", AEItemKey.CODEC.listOf()).orElse(List.of())) selection.add(filter);
         }
-        selection.setAllItems(input.getBooleanOr("allItems", false));
+        // Preserve the transfer scope of existing blocks that used the old all-items flag.
+        int legacyMode = input.getBooleanOr("allItems", false) ? 0 : 1;
+        int mode = input.getIntOr("filterMode", legacyMode);
+        selection.setMode(mode >= 0 && mode < ItemSelection.Mode.values().length
+                ? ItemSelection.Mode.values()[mode] : ItemSelection.Mode.WHITELIST);
         if (!selection.canRun()) running = false;
         var key = input.read("pendingKey", AEItemKey.CODEC).orElse(null);
         long amount = input.getLongOr("pendingAmount", 0);

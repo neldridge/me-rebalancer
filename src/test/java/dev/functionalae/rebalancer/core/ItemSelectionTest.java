@@ -4,22 +4,36 @@ import org.junit.jupiter.api.Test;
 import static org.junit.jupiter.api.Assertions.*;
 
 class ItemSelectionTest {
-    @Test void emptySelectionNeverMovesEverything() {
+    @Test void defaultsToAllItems() {
         var selection = new ItemSelection<String>();
-        assertFalse(selection.canRun()); assertFalse(selection.matches("iron")); assertFalse(selection.allItems());
+        assertTrue(selection.canRun()); assertTrue(selection.matches("iron")); assertTrue(selection.allItems());
     }
-    @Test void allItemsRequiresExplicitChoiceAndKeepsWhitelist() {
+    @Test void modesCycleAndKeepFilters() {
         var selection = new ItemSelection<String>(); selection.set(20, "iron");
-        selection.setAllItems(true); assertTrue(selection.matches("gold"));
-        selection.setAllItems(false); assertTrue(selection.matches("iron")); assertFalse(selection.matches("gold"));
+        selection.nextMode();
+        assertEquals(ItemSelection.Mode.WHITELIST, selection.mode());
+        assertTrue(selection.matches("iron")); assertFalse(selection.matches("gold"));
+        selection.nextMode();
+        assertEquals(ItemSelection.Mode.BLACKLIST, selection.mode());
+        assertFalse(selection.matches("iron")); assertTrue(selection.matches("gold"));
+        selection.nextMode(); assertTrue(selection.allItems()); assertTrue(selection.matches("iron"));
+        assertEquals("iron", selection.get(20));
     }
-    @Test void clearingTheLastFilterDisablesRunInsteadOfSelectingAll() {
-        var selection = new ItemSelection<String>(); selection.set(63, "iron"); selection.set(63, null);
+    @Test void emptyWhitelistCannotRunButEmptyBlacklistCan() {
+        var selection = new ItemSelection<String>();
+        selection.setMode(ItemSelection.Mode.WHITELIST);
+        selection.set(63, "iron"); selection.set(63, null);
         assertFalse(selection.canRun()); assertFalse(selection.matches("iron"));
+        selection.setMode(ItemSelection.Mode.BLACKLIST);
+        assertTrue(selection.canRun()); assertTrue(selection.matches("iron"));
     }
-    @Test void clearResetsExplicitAllItemsModeToo() {
-        var selection = new ItemSelection<String>(); selection.add("iron"); selection.setAllItems(true); selection.clear();
-        assertFalse(selection.canRun()); assertEquals(0, selection.count()); assertFalse(selection.matches("gold"));
+    @Test void clearPreservesMode() {
+        var selection = new ItemSelection<String>();
+        for (var mode : ItemSelection.Mode.values()) {
+            selection.setMode(mode); selection.add("iron"); selection.clear();
+            assertEquals(mode, selection.mode()); assertEquals(0, selection.count());
+            assertEquals(mode != ItemSelection.Mode.WHITELIST, selection.matches("gold"));
+        }
     }
     @Test void movingDuplicateFilterAcrossPagesKeepsOnlyOneEntry() {
         var selection = new ItemSelection<String>(); selection.set(0, "iron"); selection.set(63, "iron");
@@ -33,7 +47,7 @@ class ItemSelectionTest {
     }
     @Test void itemComponentsRemainPartOfExactMatch() {
         record Variant(String item, String component) {}
-        var selection = new ItemSelection<Variant>(); selection.add(new Variant("potion", "healing"));
+        var selection = new ItemSelection<Variant>(); selection.setMode(ItemSelection.Mode.WHITELIST); selection.add(new Variant("potion", "healing"));
         assertTrue(selection.matches(new Variant("potion", "healing")));
         assertFalse(selection.matches(new Variant("potion", "poison")));
     }
