@@ -4,7 +4,7 @@
 
 A NeoForge addon that migrates existing items toward higher-priority AE2 storage while cells remain installed in their drives. Connect drawers with a normal storage bus, give that bus a higher priority than the drives, and configure the rebalancer.
 
-**Development version: 0.3.2-dev.** Includes a filter GUI, live filter edits, Test Run previews, and destination labels. Builds do not automatically install into a modpack.
+**Release version: 0.3.2.** Includes a filter GUI, live filter edits, Test Run previews, and destination labels. Builds do not automatically install into a modpack.
 
 ## Exact development target
 
@@ -63,7 +63,7 @@ Scans examine at most eight keys/exhausted sources per server tick, stop after 4
 
 “Settled” means no selected item can currently move to strictly higher-priority storage. Full drawers may therefore be settled while stock remains in cells. Continuous mode checks again later. Lack of transfer power does not falsely complete a useful migration.
 
-The default limit is 512 mounted inventories, counting each cell separately. A fault stops transfers and logs the reason. Block art remains a placeholder using vanilla textures.
+The default limit is 512 mounted inventories, counting each cell separately. A fault stops transfers and logs the reason. Custom block and inventory artwork uses a silver machine casing with violet routing channels and cyan storage indicators.
 
 ## Build and run
 
@@ -73,7 +73,7 @@ Install a Java 25 JDK and set `JAVA_HOME`, then build using the included Gradle 
 ./gradlew build
 ```
 
-Output: `build/libs/me-rebalancer-0.3.2-dev.jar`.
+Output: `build/libs/me-rebalancer-0.3.2.jar`.
 
 `./gradlew build` resolves AE2 and GuideME from public Maven repositories; an FTB installation is not required. Optional `-PpackModsDir="/path/to/FTB Evolution 2/mods"` uses the exact pack jars and adds Functional Storage and Titanium to the development runtime. The build helper `tools/build.sh` can also detect Homebrew OpenJDK 25 and use project-local Gradle caches.
 

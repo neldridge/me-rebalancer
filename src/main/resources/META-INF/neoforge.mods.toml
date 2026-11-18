@@ -4,8 +4,9 @@ license="MIT"
 issueTrackerURL="https://github.com/neldridge/me-rebalancer/issues"
 [[mods]]
 modId="me_rebalancer"
-version="0.3.2-dev"
+version="0.3.2"
 displayName="ME Rebalancer"
+logoFile="icon.png"
 displayURL="https://github.com/neldridge/me-rebalancer"
 description='''Moves items between mounted ME storage inventories toward higher storage priorities.'''
 [[dependencies.me_rebalancer]]
